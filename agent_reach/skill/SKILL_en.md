@@ -1,141 +1,126 @@
 ---
-name: agent-reach
-description: >
-  MUST USE when user wants to research/search/look up/find anything on the
-  internet — e.g. "research this topic", "do a deep dive on X", "search the
-  web for X", "see what people say about X", "look this up".
-
-  Also MUST USE when user mentions any platform or shares any URL/link:
-  Twitter/X, Reddit, Facebook, Instagram, YouTube, GitHub, Bilibili, XiaoHongShu,
-  Xiaoyuzhou Podcast, LinkedIn/jobs/recruiting, V2EX, Xueqiu (stocks), RSS,
-  PTT, Dcard, Bahamut, Taiwan news, Taiwan ecommerce, Taiwan public data.
-
-  15 platforms, multi-backend routing (OpenCLI / per-platform CLIs / APIs).
-  Zero config for 6 channels. Run `agent-reach doctor --json` to see which
-  backend serves each platform right now.
-
-  NOT for: writing reports/analysis/translation (this skill only FETCHES
-  internet content); posting/commenting/liking (write operations); platforms
-  that already have a dedicated skill installed (prefer that skill).
-metadata:
-  openclaw:
-    homepage: https://github.com/Panniantong/Agent-Reach
+name: agent-reach-tw
+description: Use when the user needs Taiwan public web data, PTT, Dcard, Bahamut, Taiwan news RSS, PChome/momo/Yahoo Shopping prices, data.gov.tw, company lookup links, or Agent Reach Taiwan Edition availability checks.
 ---
 
-# Agent Reach — internet capability router
+# Agent Reach Taiwan Edition Skill
 
-15 platforms, multiple backends each. **When this skill exists, use it for
-these platforms — do not invent your own approach.**
+Generic AI agent skill for Agent Reach Taiwan Edition. It helps agents read and search Taiwan public web data. It is not a login-backed scraper, write tool, or anti-bot bypass layer.
 
-## Standing rules (apply for the whole session)
+## When to use
 
-1. **Health-check before acting**: for multi-backend/login-backed platforms (XiaoHongShu /
-   Reddit / Bilibili / Twitter / Facebook / Instagram), run `agent-reach doctor --json` first and
-   pick the command group matching each platform's `active_backend`.
-2. **Announce what you use**: say "using agent-reach, platform X via backend Y"
-   before starting.
-3. **On failure, follow the retry chains in references/** — never guess
-   commands.
-4. **For broad research tasks**: combine platforms (Exa for web search +
-   Twitter/Reddit for discussions + XiaoHongShu/Bilibili for Chinese
-   perspectives), collect in parallel, then synthesize.
-5. **Watch versions for the user**: after finishing a substantial
-   multi-platform task, run `agent-reach check-update` (fast, one API call).
-   If a new version exists, append one line to your wrap-up: "Agent Reach
-   vX.Y.Z is available — paste this to me to update: 帮我更新 Agent Reach：
-   https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/update.md".
-   Never interrupt the current task to update; never nag about the same version twice.
+Use this skill when the user needs:
+
+- Taiwan social/community sources: PTT, Dcard, Bahamut
+- Taiwan news: RSS and public news sources
+- Taiwan ecommerce: PChome, momo, Yahoo Shopping product pages and TWD prices
+- Taiwan government/public data: data.gov.tw and official business registry helper links
+- Installation or availability checks for Agent Reach Taiwan Edition
+
+Do not use it for:
+
+- Posting, commenting, liking, messaging, or any write operation
+- Login automation or private community scraping
+- CAPTCHA / anti-bot / Cloudflare bypass
+- Pretending blocked 403/429 content was fetched directly
+- Tasks that already have a more specialized installed skill
+
+## Start with a health check
+
+Before real data collection, run:
+
+```bash
+agent-reach doctor --json
+```
+
+Pick the path from each channel's `status` and `active_backend`. Do not guess.
+
+## Core rules
+
+1. **Doctor first, then route**: never assume a channel is currently usable.
+2. **Public read-only**: only read public pages, RSS feeds, and official helper links.
+3. **Fallback-aware**: report 403/429/DNS/Cloudflare limits honestly; use fallback paths where documented.
+4. **Do not invent commands**: use the CLI, Python channels, or reference docs.
+5. **State limitations**: distinguish directly fetched data from helper links or fallback output.
+
+## Quick commands
+
+```bash
+# Health check
+agent-reach doctor --json
+
+# Server dry-run install (no system changes)
+agent-reach install --env=server --channels=tw --dry-run
+
+# Version
+agent-reach version
+```
+
+## Python quick usage
+
+```python
+from agent_reach.channels import get_channel
+
+news = get_channel("taiwan_news")
+result = news.read_sources(limit_per_source=3)
+
+public_data = get_channel("gov_tw")
+links = public_data.search_links("company registration")
+```
+
+## Channel status semantics
+
+- `ok`: use the current backend directly.
+- `warn`: the site may be blocked by 403/Cloudflare/DNS/rate limits; use fallback or report official helper links only.
+- `off` / `error`: do not force scraping; report the missing dependency or unavailable state.
+
+## Known Taiwan channels
+
+- `ptt`: PTT board index, posts, and push-comment parser.
+- `dcard`: public text / Jina-style fallback parser; degrades clearly on 403.
+- `bahamut`: Bahamut topic list, post, and reply parser; may need fallback.
+- `taiwan_news`: Taiwan news RSS normalizer with per-source partial failure handling.
+- `taiwan_ecommerce`: PChome / momo / Yahoo Shopping product parser and TWD price normalization.
+- `gov_tw`: `data.gov.tw` search helper plus official business registry helper-only link.
 
 ## Routing table
 
 | User intent | Category | Details |
-|---------|------|---------|
-| Web / code search | search | [references/search.md](references/search.md) |
-| XiaoHongShu / Twitter / Bilibili / V2EX / Reddit / Facebook / Instagram | social | [references/social.md](references/social.md) |
+| --- | --- | --- |
 | PTT / Dcard / Bahamut | taiwan-social | [references/taiwan-social.md](references/taiwan-social.md) |
-| Taiwan ecommerce prices | taiwan-commerce | [references/taiwan-commerce.md](references/taiwan-commerce.md) |
-| Taiwan public data / company lookup | taiwan-public-data | [references/taiwan-public-data.md](references/taiwan-public-data.md) |
-| Jobs / LinkedIn | career | [references/career.md](references/career.md) |
-| GitHub / code | dev | [references/dev.md](references/dev.md) |
-| Web pages / articles / RSS | web | [references/web.md](references/web.md) |
-| YouTube / Bilibili / podcast transcripts | video | [references/video.md](references/video.md) |
+| PChome / momo / Yahoo Shopping prices | taiwan-commerce | [references/taiwan-commerce.md](references/taiwan-commerce.md) |
+| data.gov.tw / business registry / company data | taiwan-public-data | [references/taiwan-public-data.md](references/taiwan-public-data.md) |
+| Web pages / RSS / Jina fallback | web | [references/web.md](references/web.md) |
+| Search fallback | search | [references/search.md](references/search.md) |
 
-## Zero-config quick commands
+## Common task examples
 
-```bash
-# Exa web search
-mcporter call 'exa.web_search_exa(query: "query", numResults: 5)'
+### Taiwan news RSS
 
-# Read any web page
-curl -s "https://r.jina.ai/URL"
+```python
+from agent_reach.channels import get_channel
 
-# GitHub search
-gh search repos "query" --sort stars --limit 10
-
-# YouTube subtitles (NOTE: never use yt-dlp for Bilibili — see video.md)
-yt-dlp --write-sub --skip-download -o "/tmp/%(id)s" "URL"
-
-# V2EX hot topics
-curl -s "https://www.v2ex.com/api/topics/hot.json" -H "User-Agent: agent-reach/1.0"
-
-# Bilibili search (bili-cli, no login needed)
-bili search "query" --type video -n 5
-
-# Taiwan channel health check
-agent-reach doctor --json
+channel = get_channel("taiwan_news")
+result = channel.read_sources(limit_per_source=5)
 ```
 
-## Login-backed platforms (pick by doctor's active_backend)
+### Government public data / company lookup entry points
 
-```bash
-# Twitter search (twitter-cli preferred; retry chain in social.md)
-twitter search "query" -n 10
+```python
+from agent_reach.channels import get_channel
 
-# Reddit (NO zero-config path — OpenCLI or rdt-cli, login required)
-opencli reddit search "query" -f yaml   # desktop
-rdt search "query" --limit 10            # legacy/server
-
-# XiaoHongShu (desktop prefers OpenCLI)
-opencli xiaohongshu search "query" -f yaml
-
-# Facebook / Instagram (desktop OpenCLI, browser session)
-opencli facebook search "query" -f yaml
-opencli facebook groups -f yaml
-opencli instagram search "query" -f yaml       # user search
-opencli instagram user USERNAME -f yaml        # recent posts from one user
+channel = get_channel("gov_tw")
+links = channel.search_links("company registration")
 ```
 
-## Environment check
+### Taiwan ecommerce prices
 
-```bash
-# Channel availability + which backend serves each platform
-agent-reach doctor --json
-```
+Run `agent-reach doctor --json` first to check `taiwan_ecommerce`, then follow the parser/fallback paths in `references/taiwan-commerce.md`. If a site blocks public HTTP, report the limitation and fallback path; do not fabricate prices.
 
-## Workspace rules
+## Verification checklist
 
-**Never create files in the agent workspace.** Use `/tmp/` for temporary
-output and `~/.agent-reach/` for persistent data.
-
-## Detailed references
-
-Read the matching file when you need specifics (commands above cover the
-common cases; references hold per-backend command groups, caveats, retry
-chains — note: reference docs are written in Chinese, commands are universal):
-
-- [Search](references/search.md) — Exa AI search
-- [Social](references/social.md) — XiaoHongShu, Twitter, Bilibili, V2EX, Reddit, Facebook, Instagram (multi-backend/login-backed groups)
-- [Taiwan Social](references/taiwan-social.md) — PTT, Dcard, Bahamut
-- [Taiwan Commerce](references/taiwan-commerce.md) — PChome, momo, Yahoo Shopping
-- [Taiwan Public Data](references/taiwan-public-data.md) — data.gov.tw, company/public-data helpers
-- [Career](references/career.md) — LinkedIn
-- [Dev](references/dev.md) — GitHub CLI
-- [Web](references/web.md) — Jina Reader, RSS
-- [Video](references/video.md) — YouTube, Bilibili, Xiaoyuzhou
-
-## Configure a channel
-
-If a channel needs setup, fetch the install guide:
-https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/install.md
-
-The user only provides cookies / one extension click; the agent does the rest.
+- [ ] Ran `agent-reach doctor --json`
+- [ ] Confirmed channel status / active_backend
+- [ ] Used only public read-only data
+- [ ] Explained 403/429/Cloudflare limitations where relevant
+- [ ] Returned source URLs or official helper links

@@ -11,6 +11,8 @@ PUBLIC_TAIWAN_DOCS = [
     "docs/IMPLEMENTATION_PLAN_TW.md",
     "docs/SPEC_TW.md",
     "agent_reach/guides/setup-taiwan.md",
+    "agent_reach/skill/SKILL.md",
+    "agent_reach/skill/SKILL_en.md",
 ]
 PRIVATE_IDENTIFIERS = [
     "oci-raiy",
@@ -90,6 +92,19 @@ def test_root_readme_is_taiwan_edition_entrypoint():
 
     for phrase in required_phrases:
         assert phrase in doc
+
+
+def test_taiwan_skill_installs_under_distinct_skill_name():
+    skill = _read("agent_reach/skill/SKILL.md")
+    english_skill = _read("agent_reach/skill/SKILL_en.md")
+    cli = _read("agent_reach/cli.py")
+    readme = _read("README.md")
+
+    assert "name: agent-reach-tw" in skill
+    assert "name: agent-reach-tw" in english_skill
+    assert '_SKILL_INSTALL_NAME = "agent-reach-tw"' in cli
+    assert 'f"~/.agents/skills/{_SKILL_INSTALL_NAME}"' in cli
+    assert "~/.agents/skills/agent-reach-tw" in readme
 
 
 def test_public_taiwan_docs_do_not_expose_private_deployment_identifiers():

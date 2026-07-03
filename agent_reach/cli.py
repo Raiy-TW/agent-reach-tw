@@ -19,6 +19,7 @@ from agent_reach import __version__
 
 # Pinned to the 0.4.2 state — PyPI still only has 0.4.1 (upstream issue #10).
 _RDT_GIT_SOURCE = "git+https://github.com/public-clis/rdt-cli.git@5e4fb3720d5c174e976cd425ccc3b879d52cac66"
+_SKILL_INSTALL_NAME = "agent-reach-tw"
 
 
 def _ensure_utf8_console():
@@ -458,7 +459,7 @@ def _install_skill(force: bool = True):
     installed = False
     for skill_dir in skill_dirs:
         if os.path.isdir(skill_dir):
-            target = os.path.join(skill_dir, "agent-reach")
+            target = os.path.join(skill_dir, _SKILL_INSTALL_NAME)
             status = _copy_skill_dir(target)
             if status:
                 platform_name = "Agent" if ".agents" in skill_dir else "OpenClaw" if "openclaw" in skill_dir else "Claude Code"
@@ -470,7 +471,7 @@ def _install_skill(force: bool = True):
 
     if not installed:
         # No known skill directory found — create for .agents by default
-        target = os.path.expanduser("~/.agents/skills/agent-reach")
+        target = os.path.expanduser(f"~/.agents/skills/{_SKILL_INSTALL_NAME}")
         os.makedirs(os.path.dirname(target), exist_ok=True)
         status = _copy_skill_dir(target)
         if status == "preserved":
@@ -487,9 +488,9 @@ def _uninstall_skill():
     import shutil
 
     skill_dirs = [
-        ("~/.openclaw/skills/agent-reach", "OpenClaw"),
-        ("~/.claude/skills/agent-reach", "Claude Code"),
-        ("~/.agents/skills/agent-reach", "Agent"),
+        (f"~/.openclaw/skills/{_SKILL_INSTALL_NAME}", "OpenClaw"),
+        (f"~/.claude/skills/{_SKILL_INSTALL_NAME}", "Claude Code"),
+        (f"~/.agents/skills/{_SKILL_INSTALL_NAME}", "Agent"),
     ]
 
     # Also check OPENCLAW_HOME
@@ -497,7 +498,7 @@ def _uninstall_skill():
     if openclaw_home:
         skill_dirs.insert(
             0,
-            (os.path.join(openclaw_home, ".openclaw", "skills", "agent-reach"), "OpenClaw"),
+            (os.path.join(openclaw_home, ".openclaw", "skills", _SKILL_INSTALL_NAME), "OpenClaw"),
         )
 
     removed = False
@@ -1430,9 +1431,9 @@ def _cmd_uninstall(args):
 
     # ── 2. Skill files ──
     skill_dirs = [
-        ("~/.openclaw/skills/agent-reach", "OpenClaw"),
-        ("~/.claude/skills/agent-reach", "Claude Code"),
-        ("~/.agents/skills/agent-reach", "Agent"),
+        (f"~/.openclaw/skills/{_SKILL_INSTALL_NAME}", "OpenClaw"),
+        (f"~/.claude/skills/{_SKILL_INSTALL_NAME}", "Claude Code"),
+        (f"~/.agents/skills/{_SKILL_INSTALL_NAME}", "Agent"),
     ]
 
     for skill_path_template, platform_name in skill_dirs:

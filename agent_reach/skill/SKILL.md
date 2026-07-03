@@ -1,155 +1,126 @@
 ---
-name: agent-reach
-description: >
-  MUST USE when user wants to 调研/research/搜索/search/查/找/look up anything
-  on the internet — e.g. 全网调研 X / 帮我调研一下 X / 查一下 X / 搜搜 X /
-  看看大家怎么评价 X / X 上有什么讨论 / research this topic。
-
-  Also MUST USE when user mentions any platform or shares any URL/链接:
-  小红书/xiaohongshu/xhs, Twitter/推特/X, B站/bilibili, Reddit, Facebook,
-  Instagram, V2EX, LinkedIn/领英/招聘/求职/jobs, YouTube, GitHub code search, 小宇宙播客,
-  雪球/股票行情, RSS feeds, PTT, Dcard, 巴哈姆特, 台湾新闻, 台湾电商,
-  台湾政府开放资料, or any web URL.
-
-  15 platforms, multi-backend routing (OpenCLI / per-platform CLIs / APIs).
-  Zero config for 6 channels. Run `agent-reach doctor --json` to see which
-  backend serves each platform right now.
-
-  NOT for: 写报告/数据分析/翻译等内容加工（本 skill 只负责从互联网获取内容）；
-  发帖/评论/点赞等写操作；已有专门 skill 的平台（先用专门 skill）。
-
-  【路由方式】SKILL.md 包含路由表和常用命令，复杂场景需按需阅读对应分类的 references/*.md。
-  分类：search / social (小红书/推特/B站/V2EX/Reddit/Facebook/Instagram) / taiwan-social(PTT/Dcard/巴哈姆特) / taiwan-commerce(台湾电商/价格) / taiwan-public-data(政府开放资料/商工资料) / career(LinkedIn) / dev(github) / web(网页/文章/RSS) / video(YouTube/B站/播客)。
-triggers:
-  - research: 调研/全网调研/帮我调研/研究一下/research/深入了解
-  - search: 搜/查/找/search/搜索/查一下/帮我搜/看看大家怎么说
-  - social:
-    - 小红书: xiaohongshu/xhs/小红书/红书
-    - Twitter: twitter/推特/x.com/推文
-    - B站: bilibili/b站/哔哩哔哩
-    - V2EX: v2ex
-    - Reddit: reddit
-    - Facebook: facebook/fb/facebook groups
-    - Instagram: instagram/ig
-    - PTT: ptt/批踢踢
-    - Dcard: dcard
-    - Bahamut: bahamut/巴哈/巴哈姆特/gamer.com.tw
-  - taiwan-commerce: momo/PChome/台湾电商/价格监控/竞品价格
-  - taiwan-public-data: data.gov.tw/台湾政府资料/商工登记/统一编号/公司查询
-  - career: 招聘/职位/求职/linkedin/领英/找工作
-  - dev: github/代码/仓库/gh/issue/pr/分支/commit
-  - web: 网页/链接/文章/rss/读一下/打开这个
-  - video: youtube/视频/播客/字幕/小宇宙/转录/yt
-  - finance: 雪球/股票/stock/xueqiu/行情/基金
-metadata:
-  openclaw:
-    homepage: https://github.com/Panniantong/Agent-Reach
+name: agent-reach-tw
+description: Use when the user needs public Taiwan web data, PTT, Dcard, Bahamut, Taiwan news RSS, PChome/momo/Yahoo prices, data.gov.tw, company lookup links, or Agent Reach Taiwan Edition availability checks.
 ---
 
-# Agent Reach — 互联网能力路由器
+# Agent Reach Taiwan Edition Skill
 
-15 平台、多后端。**本 skill 存在时必须用它访问这些平台，不要自己发明方案。**
+台灣版 Agent Reach 的通用 AI agent skill。用途是讓 agent 讀取與搜尋台灣公開網路資料；不是登入態爬蟲、寫入工具、或 anti-bot bypass。
 
-## 常驻规则（全程适用）
+## 使用時機
 
-1. **动手前先体检**：多后端/登录态平台（小红书/Reddit/B站/Twitter/Facebook/Instagram）先跑
-   `agent-reach doctor --json`，按各平台 `active_backend` 字段选命令组。
-2. **声明你在用什么**：开始干活前说一句「使用 agent-reach 的 X 平台 / Y 后端」。
-3. **失败按 references 里的重试链处理**，不要瞎猜命令。
-4. **全网调研类任务**：组合多平台（Exa 搜索 + Twitter/Reddit 看讨论 + 小红书/B站看中文场景），并行收集再汇总。
-5. **替用户盯版本**：完成一次较大的调研/多平台任务后，顺手跑
-   `agent-reach check-update`（很快，一个 API 调用）。有新版就在收尾汇报里附一句：
-   「Agent Reach 有新版 vX.Y.Z，复制这句话给我即可更新：帮我更新 Agent Reach：
-   https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/update.md」。
-   不要中断当前任务去更新，也不要重复提醒同一个版本。
+使用者需要查：
+
+- 台灣社群：PTT、Dcard、巴哈姆特
+- 台灣新聞：RSS / 公開新聞來源
+- 台灣電商：PChome、momo、Yahoo Shopping 商品頁與 TWD 價格
+- 台灣政府資料：data.gov.tw、商工登記官方查詢入口
+- 檢查或安裝 Agent Reach Taiwan Edition
+
+不要用於：
+
+- 發文、留言、按讚、私訊等寫入操作
+- 登入態自動化或私人社群抓取
+- CAPTCHA / anti-bot / Cloudflare bypass
+- 假裝能直接抓到被 403/429 擋住的內容
+- 已有更專門 skill 的平台任務（先用專門 skill）
+
+## 開始前：先做健康檢查
+
+正式查資料前先跑：
+
+```bash
+agent-reach doctor --json
+```
+
+依照 `status` 與 `active_backend` 選擇路徑，不要猜。
+
+## 核心原則
+
+1. **先 doctor，再選路徑**：不要假設 channel 現在可用。
+2. **公開唯讀**：只讀公開頁面、RSS、官方查詢連結。
+3. **可降級**：遇到 403/429/DNS/Cloudflare 時回報 warn 與 fallback，不要說「查無」或硬編結果。
+4. **不要自己發明命令**：依 CLI、Python channel、或 references 文件走。
+5. **報告限制**：清楚標示哪些是直接讀到，哪些只是 helper link / fallback。
+
+## 快速命令
+
+```bash
+# 健康檢查
+agent-reach doctor --json
+
+# server 安裝 dry-run（不改系統）
+agent-reach install --env=server --channels=tw --dry-run
+
+# 版本
+agent-reach version
+```
+
+## Python 快速用法
+
+```python
+from agent_reach.channels import get_channel
+
+news = get_channel("taiwan_news")
+result = news.read_sources(limit_per_source=3)
+
+public_data = get_channel("gov_tw")
+links = public_data.search_links("公司登記")
+```
+
+## Channel 狀態判讀
+
+- `ok`：可直接用目前 backend。
+- `warn`：可能被 403/Cloudflare/DNS/站台限制擋住；使用 fallback 或只回報官方連結。
+- `off` / `error`：不要硬抓，先回報缺依賴或不可用原因。
+
+## 已知台灣 channel
+
+- `ptt`：PTT 看板 index / 文章 / 推噓留言 parser。
+- `dcard`：公開文字 / Jina-style fallback parser；遇到 403 時清楚降級。
+- `bahamut`：巴哈姆特討論串列表、文章與回覆 parser；可能需要 fallback。
+- `taiwan_news`：台灣新聞 RSS normalizer，支援 per-source partial failure。
+- `taiwan_ecommerce`：PChome / momo / Yahoo Shopping 商品頁 parser 與 TWD 價格正規化。
+- `gov_tw`：`data.gov.tw` 搜尋 helper 與商工登記官方查詢頁 helper-only link。
 
 ## 路由表
 
-| 用户意图 | 分类 | 详细文档 |
-|---------|------|---------|
-| 网页搜索/代码搜索 | search | [references/search.md](references/search.md) |
-| 小红书/推特/B站/V2EX/Reddit/Facebook/Instagram | social | [references/social.md](references/social.md) |
-| PTT/Dcard/巴哈姆特 | taiwan-social | [references/taiwan-social.md](references/taiwan-social.md) |
-| 台湾电商价格/竞品监控 | taiwan-commerce | [references/taiwan-commerce.md](references/taiwan-commerce.md) |
-| 台湾政府开放资料/商工登记 | taiwan-public-data | [references/taiwan-public-data.md](references/taiwan-public-data.md) |
-| 招聘/职位/LinkedIn | career | [references/career.md](references/career.md) |
-| GitHub/代码 | dev | [references/dev.md](references/dev.md) |
-| 网页/文章/RSS | web | [references/web.md](references/web.md) |
-| YouTube/B站/播客字幕 | video | [references/video.md](references/video.md) |
+| 使用者意圖 | 分類 | 詳細文件 |
+| --- | --- | --- |
+| PTT / Dcard / 巴哈姆特 | taiwan-social | [references/taiwan-social.md](references/taiwan-social.md) |
+| PChome / momo / Yahoo Shopping 價格 | taiwan-commerce | [references/taiwan-commerce.md](references/taiwan-commerce.md) |
+| data.gov.tw / 商工登記 / 公司資料 | taiwan-public-data | [references/taiwan-public-data.md](references/taiwan-public-data.md) |
+| 一般網頁 / RSS / Jina fallback | web | [references/web.md](references/web.md) |
+| 搜尋 fallback | search | [references/search.md](references/search.md) |
 
-## 零配置快速命令
+## 常見任務範例
 
-```bash
-# Exa 网页搜索
-mcporter call 'exa.web_search_exa(query: "query", numResults: 5)'
+### 台灣新聞 RSS
 
-# 通用网页阅读
-curl -s "https://r.jina.ai/URL"
+```python
+from agent_reach.channels import get_channel
 
-# GitHub 搜索
-gh search repos "query" --sort stars --limit 10
-
-# YouTube 字幕（注意：B站不要用 yt-dlp，见 video.md）
-yt-dlp --write-sub --skip-download -o "/tmp/%(id)s" "URL"
-
-# V2EX 热门
-curl -s "https://www.v2ex.com/api/topics/hot.json" -H "User-Agent: agent-reach/1.0"
-
-# B站搜索（bili-cli，无需登录）
-bili search "query" --type video -n 5
-
-# 台湾渠道健康检查
-agent-reach doctor --json
+channel = get_channel("taiwan_news")
+result = channel.read_sources(limit_per_source=5)
 ```
 
-## 需登录态的平台（按 doctor 的 active_backend 选命令）
+### 政府公開資料 / 公司查詢入口
 
-```bash
-# Twitter 搜索（twitter-cli 首选；失败重试链见 social.md）
-twitter search "query" -n 10
+```python
+from agent_reach.channels import get_channel
 
-# Reddit（无零配置路径：OpenCLI 或 rdt-cli，必须登录态）
-opencli reddit search "query" -f yaml   # 桌面
-rdt search "query" --limit 10            # 存量/服务器
-
-# 小红书（桌面首选 OpenCLI）
-opencli xiaohongshu search "query" -f yaml
-
-# Facebook / Instagram（桌面 OpenCLI，复用浏览器登录态）
-opencli facebook search "query" -f yaml
-opencli facebook groups -f yaml
-opencli instagram search "query" -f yaml       # 搜用户
-opencli instagram user USERNAME -f yaml        # 读指定用户最近帖子
+channel = get_channel("gov_tw")
+links = channel.search_links("公司登記")
 ```
 
-## 环境检查
+### 台灣電商價格
 
-```bash
-# 检查可用 channel 与每个平台当前激活的后端
-agent-reach doctor --json
-```
+先用 `agent-reach doctor --json` 確認 `taiwan_ecommerce`，再依 `references/taiwan-commerce.md` 的 parser / fallback 路徑處理。若站台擋 public HTTP，明確回報限制與 fallback，不要編價格。
 
-## 工作区规则
+## 驗證清單
 
-**不要在 agent workspace 创建文件。** 使用 `/tmp/` 存放临时输出，`~/.agent-reach/` 存放持久数据。
-
-## 详细文档
-
-根据用户需求，阅读对应的详细文档：
-
-- [搜索工具](references/search.md) — Exa AI 搜索
-- [社交媒体](references/social.md) — 小红书, Twitter, B站, V2EX, Reddit, Facebook, Instagram（多后端/登录态命令组）
-- [台湾社群](references/taiwan-social.md) — PTT, Dcard, 巴哈姆特
-- [台湾电商](references/taiwan-commerce.md) — PChome, momo, Yahoo Shopping
-- [台湾公开资料](references/taiwan-public-data.md) — data.gov.tw, 商工登记资料
-- [职场招聘](references/career.md) — LinkedIn
-- [开发工具](references/dev.md) — GitHub CLI
-- [网页阅读](references/web.md) — Jina Reader, RSS
-- [视频播客](references/video.md) — YouTube, B站, 小宇宙
-
-## 配置渠道
-
-如果某个 channel 需要配置，获取安装指南：
-https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/install.md
-
-用户只需提供 cookies，其他配置由 agent 完成。
+- [ ] 已跑 `agent-reach doctor --json`
+- [ ] 已確認 channel status / active_backend
+- [ ] 只使用公開唯讀資料
+- [ ] 對 403/429/Cloudflare 等限制有明確說明
+- [ ] 結果有來源 URL 或官方 helper link

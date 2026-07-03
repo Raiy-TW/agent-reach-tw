@@ -37,7 +37,7 @@ class TestCLI:
         assert "✅" in captured.out
 
     def test_doctor_preserves_existing_skill_install(self, monkeypatch, tmp_path, capsys):
-        skill_dir = tmp_path / ".agents" / "skills" / "agent-reach"
+        skill_dir = tmp_path / ".agents" / "skills" / "agent-reach-tw"
         skill_dir.mkdir(parents=True)
         skill_file = skill_dir / "SKILL.md"
         custom_content = "# custom Agent Reach skill\n"

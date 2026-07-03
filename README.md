@@ -57,6 +57,22 @@ channel = get_channel("taiwan_news")
 status, message = channel.check()
 ```
 
+## Skill 安裝
+
+Agent Reach Taiwan Edition 內建台灣版 skill，可安裝到支援 skill 目錄的 agent runtime。安裝後 agent 會知道先跑 `agent-reach doctor --json`，再依 PTT、Dcard、巴哈姆特、台灣新聞、台灣電商與政府公開資料 channel 狀態選擇讀取或 fallback 路徑。
+
+```bash
+agent-reach skill --install
+```
+
+安裝目標依環境自動選擇：
+
+- `~/.agents/skills/agent-reach-tw`
+- `~/.openclaw/skills/agent-reach-tw`
+- `~/.claude/skills/agent-reach-tw`
+
+英文 locale（例如 `LANG=en_US.UTF-8`）會安裝 `SKILL_en.md`；其他環境預設安裝 `SKILL.md`。若 runtime 已啟動，安裝後請重開 session 或重新載入 skills。
+
 ## 文件
 
 - 台灣版說明：[docs/README_zh-TW.md](docs/README_zh-TW.md)
