@@ -2,12 +2,24 @@ __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
 *.egg-info/
 dist/
 build/
+.venv/
 .env
+.env.*
 .agent-reach/
+.test-home/
+*.sqlite
+*.sqlite3
+*.db
 *.log
+cookies*.txt
+secrets*.json
+playwright-report/
+test-results/
 
 # Claude Code personal permission settings — local only, never commit
 .claude/settings.local.json

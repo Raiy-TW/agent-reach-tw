@@ -75,7 +75,8 @@ def main():
     p_install.add_argument("--channels", default="",
                            help="Comma-separated optional channels to install "
                                 "(twitter,xiaoyuzhou,xueqiu,xiaohongshu,"
-                                "reddit,facebook,instagram,bilibili,linkedin,all)")
+                                "reddit,facebook,instagram,bilibili,linkedin,"
+                                "tw,tw-social,tw-commerce,all)")
 
     # ── configure ──
     p_conf = sub.add_parser("configure", help="Set a config value or auto-extract from browser")
@@ -205,6 +206,19 @@ def _cmd_install(args):
         "opencli":     _install_opencli_deps,  # cross-channel backend, desktop only
         # xueqiu: cookie-only, no install step
         # linkedin: manual setup, no auto-install
+        # Taiwan channels: public/read-only; no install step in v0.1
+    }
+    CHANNEL_GROUPS = {
+        "tw": {
+            "ptt",
+            "dcard",
+            "bahamut",
+            "taiwan_news",
+            "taiwan_ecommerce",
+            "gov_tw",
+        },
+        "tw-social": {"ptt", "dcard", "bahamut"},
+        "tw-commerce": {"taiwan_ecommerce", "gov_tw"},
     }
     OPENCLI_ONLY_CHANNELS = {"opencli", "facebook", "instagram"}
     COOKIE_CHANNELS = {"twitter", "xueqiu", "bilibili"}
@@ -213,9 +227,14 @@ def _cmd_install(args):
     if args.channels:
         raw = [c.strip().lower() for c in args.channels.split(",") if c.strip()]
         if "all" in raw:
-            requested_channels = set(CHANNEL_INSTALLERS.keys()) | {"xueqiu", "linkedin"}
+            requested_channels = (
+                set(CHANNEL_INSTALLERS.keys())
+                | {"xueqiu", "linkedin"}
+                | set().union(*CHANNEL_GROUPS.values())
+            )
         else:
-            requested_channels = set(raw)
+            for channel in raw:
+                requested_channels.update(CHANNEL_GROUPS.get(channel, {channel}))
 
     # Auto-detect environment
     env = args.env

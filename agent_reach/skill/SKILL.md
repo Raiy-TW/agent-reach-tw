@@ -8,7 +8,8 @@ description: >
   Also MUST USE when user mentions any platform or shares any URL/链接:
   小红书/xiaohongshu/xhs, Twitter/推特/X, B站/bilibili, Reddit, Facebook,
   Instagram, V2EX, LinkedIn/领英/招聘/求职/jobs, YouTube, GitHub code search, 小宇宙播客,
-  雪球/股票行情, RSS feeds, or any web URL.
+  雪球/股票行情, RSS feeds, PTT, Dcard, 巴哈姆特, 台湾新闻, 台湾电商,
+  台湾政府开放资料, or any web URL.
 
   15 platforms, multi-backend routing (OpenCLI / per-platform CLIs / APIs).
   Zero config for 6 channels. Run `agent-reach doctor --json` to see which
@@ -18,7 +19,7 @@ description: >
   发帖/评论/点赞等写操作；已有专门 skill 的平台（先用专门 skill）。
 
   【路由方式】SKILL.md 包含路由表和常用命令，复杂场景需按需阅读对应分类的 references/*.md。
-  分类：search / social (小红书/推特/B站/V2EX/Reddit/Facebook/Instagram) / career(LinkedIn) / dev(github) / web(网页/文章/RSS) / video(YouTube/B站/播客)。
+  分类：search / social (小红书/推特/B站/V2EX/Reddit/Facebook/Instagram) / taiwan-social(PTT/Dcard/巴哈姆特) / taiwan-commerce(台湾电商/价格) / taiwan-public-data(政府开放资料/商工资料) / career(LinkedIn) / dev(github) / web(网页/文章/RSS) / video(YouTube/B站/播客)。
 triggers:
   - research: 调研/全网调研/帮我调研/研究一下/research/深入了解
   - search: 搜/查/找/search/搜索/查一下/帮我搜/看看大家怎么说
@@ -30,6 +31,11 @@ triggers:
     - Reddit: reddit
     - Facebook: facebook/fb/facebook groups
     - Instagram: instagram/ig
+    - PTT: ptt/批踢踢
+    - Dcard: dcard
+    - Bahamut: bahamut/巴哈/巴哈姆特/gamer.com.tw
+  - taiwan-commerce: momo/PChome/台湾电商/价格监控/竞品价格
+  - taiwan-public-data: data.gov.tw/台湾政府资料/商工登记/统一编号/公司查询
   - career: 招聘/职位/求职/linkedin/领英/找工作
   - dev: github/代码/仓库/gh/issue/pr/分支/commit
   - web: 网页/链接/文章/rss/读一下/打开这个
@@ -63,6 +69,9 @@ metadata:
 |---------|------|---------|
 | 网页搜索/代码搜索 | search | [references/search.md](references/search.md) |
 | 小红书/推特/B站/V2EX/Reddit/Facebook/Instagram | social | [references/social.md](references/social.md) |
+| PTT/Dcard/巴哈姆特 | taiwan-social | [references/taiwan-social.md](references/taiwan-social.md) |
+| 台湾电商价格/竞品监控 | taiwan-commerce | [references/taiwan-commerce.md](references/taiwan-commerce.md) |
+| 台湾政府开放资料/商工登记 | taiwan-public-data | [references/taiwan-public-data.md](references/taiwan-public-data.md) |
 | 招聘/职位/LinkedIn | career | [references/career.md](references/career.md) |
 | GitHub/代码 | dev | [references/dev.md](references/dev.md) |
 | 网页/文章/RSS | web | [references/web.md](references/web.md) |
@@ -88,6 +97,9 @@ curl -s "https://www.v2ex.com/api/topics/hot.json" -H "User-Agent: agent-reach/1
 
 # B站搜索（bili-cli，无需登录）
 bili search "query" --type video -n 5
+
+# 台湾渠道健康检查
+agent-reach doctor --json
 ```
 
 ## 需登录态的平台（按 doctor 的 active_backend 选命令）
@@ -127,6 +139,9 @@ agent-reach doctor --json
 
 - [搜索工具](references/search.md) — Exa AI 搜索
 - [社交媒体](references/social.md) — 小红书, Twitter, B站, V2EX, Reddit, Facebook, Instagram（多后端/登录态命令组）
+- [台湾社群](references/taiwan-social.md) — PTT, Dcard, 巴哈姆特
+- [台湾电商](references/taiwan-commerce.md) — PChome, momo, Yahoo Shopping
+- [台湾公开资料](references/taiwan-public-data.md) — data.gov.tw, 商工登记资料
 - [职场招聘](references/career.md) — LinkedIn
 - [开发工具](references/dev.md) — GitHub CLI
 - [网页阅读](references/web.md) — Jina Reader, RSS

@@ -183,6 +183,25 @@ class TestCLI:
         assert "[dry-run] Would install optional channels: bilibili" in out
         assert "facebook, instagram, opencli, bilibili" not in out
 
+    def test_install_dry_run_expands_taiwan_channel_group(self, monkeypatch, capsys):
+        monkeypatch.setattr(cli, "_install_system_deps_dryrun", lambda: None)
+
+        cli._cmd_install(
+            Namespace(
+                env="server",
+                proxy="",
+                safe=False,
+                dry_run=True,
+                channels="tw",
+            )
+        )
+
+        out = capsys.readouterr().out
+        assert (
+            "[dry-run] Would install optional channels: "
+            "bahamut, dcard, gov_tw, ptt, taiwan_ecommerce, taiwan_news"
+        ) in out
+
 
 class TestCheckUpdateRetry:
     def test_retry_timeout_classification(self):

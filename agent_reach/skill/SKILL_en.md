@@ -7,7 +7,8 @@ description: >
 
   Also MUST USE when user mentions any platform or shares any URL/link:
   Twitter/X, Reddit, Facebook, Instagram, YouTube, GitHub, Bilibili, XiaoHongShu,
-  Xiaoyuzhou Podcast, LinkedIn/jobs/recruiting, V2EX, Xueqiu (stocks), RSS.
+  Xiaoyuzhou Podcast, LinkedIn/jobs/recruiting, V2EX, Xueqiu (stocks), RSS,
+  PTT, Dcard, Bahamut, Taiwan news, Taiwan ecommerce, Taiwan public data.
 
   15 platforms, multi-backend routing (OpenCLI / per-platform CLIs / APIs).
   Zero config for 6 channels. Run `agent-reach doctor --json` to see which
@@ -51,6 +52,9 @@ these platforms — do not invent your own approach.**
 |---------|------|---------|
 | Web / code search | search | [references/search.md](references/search.md) |
 | XiaoHongShu / Twitter / Bilibili / V2EX / Reddit / Facebook / Instagram | social | [references/social.md](references/social.md) |
+| PTT / Dcard / Bahamut | taiwan-social | [references/taiwan-social.md](references/taiwan-social.md) |
+| Taiwan ecommerce prices | taiwan-commerce | [references/taiwan-commerce.md](references/taiwan-commerce.md) |
+| Taiwan public data / company lookup | taiwan-public-data | [references/taiwan-public-data.md](references/taiwan-public-data.md) |
 | Jobs / LinkedIn | career | [references/career.md](references/career.md) |
 | GitHub / code | dev | [references/dev.md](references/dev.md) |
 | Web pages / articles / RSS | web | [references/web.md](references/web.md) |
@@ -76,6 +80,9 @@ curl -s "https://www.v2ex.com/api/topics/hot.json" -H "User-Agent: agent-reach/1
 
 # Bilibili search (bili-cli, no login needed)
 bili search "query" --type video -n 5
+
+# Taiwan channel health check
+agent-reach doctor --json
 ```
 
 ## Login-backed platforms (pick by doctor's active_backend)
@@ -118,6 +125,9 @@ chains — note: reference docs are written in Chinese, commands are universal):
 
 - [Search](references/search.md) — Exa AI search
 - [Social](references/social.md) — XiaoHongShu, Twitter, Bilibili, V2EX, Reddit, Facebook, Instagram (multi-backend/login-backed groups)
+- [Taiwan Social](references/taiwan-social.md) — PTT, Dcard, Bahamut
+- [Taiwan Commerce](references/taiwan-commerce.md) — PChome, momo, Yahoo Shopping
+- [Taiwan Public Data](references/taiwan-public-data.md) — data.gov.tw, company/public-data helpers
 - [Career](references/career.md) — LinkedIn
 - [Dev](references/dev.md) — GitHub CLI
 - [Web](references/web.md) — Jina Reader, RSS
